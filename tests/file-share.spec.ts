@@ -51,7 +51,7 @@ describe('文件发送', () => {
     expect(desktopActions({ name: '报告.xlsx' })).toEqual(['download'])
     expect(desktopActions({ name: '报告.pdf', link: 'x' })).toEqual(['copyLink', 'download'])
   })
-  it('PDF保留下载与文件复制指引；HTML点击复制正文，保留原文件下载', async () => {
+  it('PDF菜单只有下载标签；HTML点击复制正文，保留原文件下载', async () => {
     const dom = new JSDOM('<button id="send">发送</button>', { url: 'https://a.test/' })
     vi.stubGlobal('document', dom.window.document)
     vi.stubGlobal('location', dom.window.location)
@@ -63,7 +63,7 @@ describe('文件发送', () => {
     const open = (name: string) => dom.window.dispatchEvent(new dom.window.CustomEvent('dsh-share:file', { detail: { href: '/file', name, anchor: dom.window.document.querySelector('button') } }))
     try {
       open('演示.pdf')
-      expect(dom.window.document.querySelector('[data-dsh-file-share-menu-note]')?.textContent).toBe(zh.desktopSend)
+      expect(dom.window.document.querySelector('[data-dsh-file-share-menu-note]')).toBeNull()
       expect(dom.window.document.querySelectorAll('[role="menuitem"]')).toHaveLength(1)
       open('演示.html')
       expect(dom.window.document.querySelector('[data-dsh-file-share-item="download"]')).not.toBeNull()

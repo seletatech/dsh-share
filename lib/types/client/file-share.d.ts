@@ -25,7 +25,6 @@ declare const STRINGS: {
         readonly copyLink: "复制链接";
         readonly download: "下载";
         readonly retry: "重试";
-        readonly desktopSend: "下载后，在下载文件夹中复制文件，再粘贴到微信或企业微信聊天。";
         readonly denied: "登录已失效或没有文件权限，请刷新后重试";
         readonly failed: "文件准备失败，请重试";
         readonly timeout: "文件准备超时，请重试。";
@@ -52,7 +51,6 @@ declare const STRINGS: {
         readonly copyLink: "Copy link";
         readonly download: "Download";
         readonly retry: "Retry";
-        readonly desktopSend: "After downloading, copy the file in your Downloads folder and paste it into WeChat or WeCom.";
         readonly denied: "Your session expired or you lack access to this file. Refresh and try again.";
         readonly failed: "Could not prepare the file. Try again.";
         readonly timeout: "Preparing the file timed out. Try again.";
