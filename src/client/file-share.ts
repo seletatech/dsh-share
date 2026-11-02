@@ -30,12 +30,13 @@ const TYPES: Record<string, string> = {
 const extension = (name = ''): string => name.split('.').at(-1)!.toLowerCase()
 /** Browsers can place only PNG (from these images) and plain text on the clipboard. */
 export const copiesAsImage = (name?: string): boolean => ['png', 'jpg', 'jpeg', 'webp'].includes(extension(name))
-export const copiesAsText = (name?: string): boolean => ['txt', 'md', 'csv', 'json'].includes(extension(name))
+export const copiesAsText = (name?: string): boolean => ['txt', 'md', 'csv', 'json', 'html', 'htm'].includes(extension(name))
 
 const STRINGS = {
   zh: {
     title: '发送文件', close: '关闭', preparing: '正在准备文件…', share: '分享…', copyImage: '复制图片', copyText: '复制文字',
     copyLink: '复制链接', download: '下载', retry: '重试',
+    desktopSend: '下载后，在下载文件夹中复制文件，再粘贴到微信或企业微信聊天。',
     denied: '登录已失效或没有文件权限，请刷新后重试', failed: '文件准备失败，请重试', timeout: '文件准备超时，请重试。',
     tooLarge: '文件超过 100 MB，请下载后发送', encoding: '文字编码暂不支持复制，请下载原文件。',
     invalid: '文件地址不可用', imageLarge: '图片过大，请下载后发送', copyFailed: '未能复制，请下载后发送。',
@@ -49,6 +50,7 @@ const STRINGS = {
   en: {
     title: 'Send file', close: 'Close', preparing: 'Preparing file…', share: 'Share…', copyImage: 'Copy image', copyText: 'Copy text',
     copyLink: 'Copy link', download: 'Download', retry: 'Retry',
+    desktopSend: 'After downloading, copy the file in your Downloads folder and paste it into WeChat or WeCom.',
     denied: 'Your session expired or you lack access to this file. Refresh and try again.', failed: 'Could not prepare the file. Try again.', timeout: 'Preparing the file timed out. Try again.',
     tooLarge: 'This file is over 100 MB. Download it to send.', encoding: 'This text encoding cannot be copied. Download the original file.',
     invalid: 'File address unavailable', imageLarge: 'This image is too large. Download it to send.', copyFailed: 'Could not copy. Download the file to send it.',
@@ -119,12 +121,20 @@ export function chatText(text: string): string {
 }
 
 export async function copyableFileText(file: File, strings: FileShareStrings): Promise<string> {
-  if (file.size > 2 * 1024 * 1024 || !/^(?:text\/(?:plain|markdown|csv)|application\/json)$/.test(file.type)) return ''
+  if (file.size > 2 * 1024 * 1024 || !/^(?:text\/(?:plain|markdown|csv|html)|application\/json)$/.test(file.type)) return ''
   let text: string
   try {
     text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer())
   } catch {
     throw new Error(strings.encoding)
+  }
+  if (file.type === 'text/html') {
+    // Template content stays inert: scripts and external resources never enter the live document.
+    const template = document.createElement('template')
+    template.innerHTML = text
+    template.content.querySelectorAll('script,style,noscript,template,iframe,object,embed,title').forEach(node => node.remove())
+    template.content.querySelectorAll('br,p,div,h1,h2,h3,h4,h5,h6,li,tr,section,article').forEach(node => node.append('\n'))
+    return (template.content.textContent ?? '').replace(/[\t ]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
   }
   return file.type === 'text/markdown' ? chatText(text) : text
 }
@@ -168,11 +178,12 @@ function glyph(document: Document, kind: string): SVGSVGElement {
 }
 
 const STYLE = `
-[data-dsh-file-share-menu] { background: var(--dsw-alias-bg-base, #fff); border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22)); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,17,21,.12); box-sizing: border-box; color: var(--dsw-alias-label-primary, #0f1115); display: grid; font-size: 14px; inset: auto; margin: 0; min-width: 160px; padding: 4px; position: fixed; z-index: 9999; }
+[data-dsh-file-share-menu] { background: var(--dsw-alias-bg-base, #fff); border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22)); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,17,21,.12); box-sizing: border-box; color: var(--dsw-alias-label-primary, #0f1115); display: grid; font-size: 14px; inset: auto; margin: 0; min-width: 160px; max-width: min(300px, calc(100vw - 16px)); padding: 4px; position: fixed; z-index: 9999; }
 [data-dsh-file-share-menu] button, [data-dsh-file-share] button { appearance: none; background: transparent; border: 0; color: inherit; cursor: pointer; font: inherit; }
 [data-dsh-file-share-menu] button:disabled, [data-dsh-file-share] button:disabled { cursor: default; opacity: .5; }
 [data-dsh-file-share-menu] button:focus-visible, [data-dsh-file-share] button:focus-visible { outline: 2px solid var(--dsw-focus-ring-color, #4d6bfe); outline-offset: 2px; }
 [data-dsh-file-share-item] { align-items: center; border-radius: 8px; display: flex; gap: 8px; min-height: 36px; padding: 0 10px; text-align: start; white-space: nowrap; }
+[data-dsh-file-share-menu-note] { color: var(--dsw-alias-label-secondary, #61666b); font-size: 12px; line-height: 1.6; margin: 4px 10px 8px; }
 [data-dsh-file-share-item] svg { color: var(--dsw-alias-label-secondary, #61666b); flex: none; }
 [data-dsh-file-share-item]:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover, rgba(127,127,127,.12)); }
 [data-dsh-file-share] { background: var(--dsw-alias-bg-base, #fff); border: 0; border-radius: 20px 20px 0 0; box-sizing: border-box; color: var(--dsw-alias-label-primary, #0f1115); font-size: 15px; line-height: 1.6; margin: auto 0 0; max-height: calc(100dvh - 24px); max-width: none; overflow: auto; padding: 20px 20px max(20px, env(safe-area-inset-bottom)); width: 100%; }
@@ -319,13 +330,19 @@ export function installFileShare(target: Document, getLocale: () => string): () 
         }
       })),
       copyLink: item(strings.copyLink, 'link', run(() => copyLink(request.link!, strings))),
-      download: item(strings.download, 'download', run(() => startDownload(target, request.href))),
+      download: item(strings.download, 'download', run(() => { startDownload(target, request.href); toast(strings.desktopSend) })),
     }
     for (const key of desktopActions(request)) {
       const button = actions[key]
       button.dataset.dshFileShareItem = key
       button.setAttribute('role', 'menuitem')
       menu.append(button)
+    }
+    if (desktopActions(request).length === 1) {
+      const note = target.createElement('p')
+      note.dataset.dshFileShareMenuNote = ''
+      note.textContent = strings.desktopSend
+      menu.append(note)
     }
     menu.addEventListener('keydown', event => {
       const items = [...menu.querySelectorAll<HTMLButtonElement>('[role=menuitem]')]
