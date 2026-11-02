@@ -8,6 +8,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import { IconShareOutlineRegular, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { createElement, Fragment, type MouseEvent as ReactMouseEvent, type ReactElement } from 'react'
+import { installFileShare } from './file-share.ts'
 import { normalizeShareLocale, t } from './i18n.ts'
 import {
   createShareRuntime,
@@ -80,6 +81,7 @@ export function ShareConversationAction({
 }
 
 export function apply(ctx: Context): void {
+  ctx.effect(() => installFileShare(document, () => ctx.locale.getLocale().active))
   let sharedRuntime: ShareRuntime | undefined
   let registrations = 0
   const runtimeForRegistration = (): ShareRuntime => {
@@ -130,6 +132,7 @@ export function apply(ctx: Context): void {
   })
 }
 
+export { FILE_SHARE_EVENT, chatText, copyableFileText, desktopActions, fileShareEnvironment, readShareFile } from './file-share.ts'
 export { createShareCard } from './card.ts'
 export { createShareMarkdown } from './markdown.ts'
 export { findTurnContent, findTurnContentFromAction } from './dom.ts'

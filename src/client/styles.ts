@@ -52,16 +52,23 @@ div:has([data-dsh-share-button]) > span { order: 2; }
   appearance: none;
   background: transparent;
   border: 0;
-  border-radius: var(--dsw-radius-sm, 6px);
-  color: var(--dsw-alias-label-primary, currentColor);
+  border-radius: var(--dsw-radius-sm, 8px);
+  color: var(--dsw-alias-label-secondary, currentColor);
   cursor: pointer;
   display: inline-flex;
-  height: 34px;
+  height: 28px;
   justify-content: center;
   padding: 0;
-  width: 34px;
+  width: 28px;
 }
-[data-dsh-share-conversation]:hover { background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, .12)); }
+[data-dsh-share-conversation]:hover {
+  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, .12));
+  color: var(--dsw-alias-label-primary, currentColor);
+}
+/* Checkboxes sit 42px left of the chat column; make room when the native gutter is narrower. */
+@container (max-width: 700px) {
+  [data-conversation-scroll][data-dsh-share-selection] [data-chat-flow] { padding-inline-start: 28px; }
+}
 
 /* DeepSeek 官网式选择模式：一轮问答作为一组，常规操作和输入区让位给底栏。 */
 [data-conversation-scroll][data-dsh-share-selection] [data-composer-seat],
@@ -167,9 +174,9 @@ div:has([data-dsh-share-button]) > span { order: 2; }
   box-sizing: border-box;
   display: flex;
   flex: none;
-  height: 66px;
   justify-content: center;
   margin-top: -66px;
+  min-height: 66px;
   position: sticky;
   width: 100%;
   z-index: 9;
@@ -275,24 +282,17 @@ div:has([data-dsh-share-button]) > span { order: 2; }
   color: var(--dsw-alias-label-secondary, #68707c);
 }
 [data-dsh-share-label="compact"] { display: none; }
-@media (max-width: 720px) {
-  [data-dsh-share-selection-footer] {
-    height: 108px;
-    margin-top: -108px;
-    padding: 10px 0;
-  }
+[data-dsh-share-selection-footer] { container-type: inline-size; }
+@container (max-width: 720px) {
   [data-dsh-share-selection-footer-inner] {
     display: grid;
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr) minmax(0, 1.3fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-rows: repeat(2, 36px);
+    padding-block: 10px;
     width: calc(100% - 32px);
   }
-  [data-dsh-share-select-all] {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-  }
+  [data-dsh-share-select-all] { grid-column: 1; grid-row: 1; justify-self: start; }
   [data-dsh-share-selection-divider] { display: none; }
   [data-dsh-share-selection-count] {
     font-size: 13px;
@@ -310,12 +310,12 @@ div:has([data-dsh-share-button]) > span { order: 2; }
     font-size: 13px;
     grid-row: 2;
     min-width: 0;
-    padding-inline: 6px;
-    width: 100%;
+    padding-inline: 10px;
   }
   [data-dsh-share-selection-cancel] { grid-column: 1; }
-  [data-dsh-share-download-group] { grid-column: 2; grid-row: 2; min-width: 0; }
-  [data-dsh-share-download-group] > span { min-width: 0; }
+  [data-dsh-share-download-group] { display: flex; grid-column: 2; grid-row: 2; min-width: 0; }
+  [data-dsh-share-download-group] [data-dsh-share-selection-download] { flex: 1 1 0; min-width: 0; }
+  [data-dsh-share-download-group] > span { flex: none; }
   [data-dsh-share-format-trigger] { font-size: 12px; }
   [data-dsh-share-selection-create] { grid-column: 3; }
   [data-dsh-share-label="wide"] { display: none; }
