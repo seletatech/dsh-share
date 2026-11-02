@@ -4,7 +4,7 @@ import { normalizeShareLocale, t } from '../src/client/i18n.ts'
 describe('第三方语言包兼容', () => {
   it.each(['zh', 'zh-CN', 'zh-TW', 'ZH-Hans'])(
     '%s 使用中文分享文案', locale => {
-      expect(t(normalizeShareLocale(locale)).shareTooltip).toBe('分享')
+      expect(t(normalizeShareLocale(locale)).shareTooltip).toBe('导出这轮对话')
     },
   )
 

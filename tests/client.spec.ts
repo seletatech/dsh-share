@@ -187,6 +187,7 @@ describe('分享按钮运行时', () => {
 
     const localeSnapshot = { active: 'zh', locales: [], revision: 0 } as const
     apply({
+      effect: (callback: () => () => void) => { callback() },
       locale: {
         getLocale: () => localeSnapshot,
         getSnapshot: () => localeSnapshot,
@@ -238,7 +239,7 @@ describe('分享按钮运行时', () => {
 
     const action = actionComponent(actionProps(runtime, 'message-one'))
     expect(action.type).toBe(Tooltip)
-    expect(action.props).toMatchObject({ label: '分享', side: 'bottom' })
+    expect(action.props).toMatchObject({ label: '导出这轮对话', side: 'bottom' })
     expect(action.props.children.type).toBe('button')
     expect(action.props.children.props).toMatchObject({
       'data-dsh-share-button': '',
@@ -251,10 +252,10 @@ describe('分享按钮运行时', () => {
 
     const header = headerComponent(headerProps(runtime))
     expect(header.type).toBe(Tooltip)
-    expect(header.props).toMatchObject({ label: '分享对话', side: 'bottom' })
+    expect(header.props).toMatchObject({ label: '导出对话', side: 'bottom' })
     expect(header.props.children.props).toMatchObject({
       'data-dsh-share-conversation': '',
-      'aria-label': '分享对话',
+      'aria-label': '导出对话',
     })
     header.props.children.props.onClick({ currentTarget: fixture.source })
     expect(subscribeLocale).toHaveBeenCalledOnce()
@@ -263,9 +264,9 @@ describe('分享按钮运行时', () => {
     expect(styleText).toContain('[data-dsh-share-button] { order: 1; }')
     expect(styleText).toContain('[data-dsh-share-turn-select]')
     expect(styleText).toContain('[data-dsh-share-selection-footer]')
-    expect(styleText).toContain('height: 66px')
-    expect(styleText).toContain('height: 108px')
-    expect(styleText).toContain('grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr) minmax(0, 1.3fr)')
+    expect(styleText).toContain('min-height: 66px')
+    expect(styleText).toContain('@container (max-width: 720px)')
+    expect(styleText).toContain('grid-template-columns: auto minmax(0, 1fr) auto')
     expect(styleText).not.toContain('[data-dsh-share-select]')
 
     for (const dispose of injectionDisposers) dispose()
@@ -286,9 +287,9 @@ describe('分享按钮运行时', () => {
     const action = ShareAction(actionProps(runtime, 'message-en'))
     const header = ShareConversationAction(headerProps(runtime))
 
-    expect(action.props.label).toBe('Share')
+    expect(action.props.label).toBe('Export this turn')
     expect(action.props.children.props['aria-label']).toBe('Share this Q&A as an image')
-    expect(header.props.label).toBe('Share conversation')
+    expect(header.props.label).toBe('Export conversation')
     expect(document.querySelector('[data-dsh-share-dialog]')).toBeNull()
 
     locale = 'zh'
@@ -422,7 +423,7 @@ describe('分享按钮运行时', () => {
     expect(footer).not.toBeNull()
     expect(footer.textContent).toContain('全选')
     expect(footer.textContent).toContain('已选择 2 组对话')
-    expect(getComputedStyle(footer).height).toBe('66px')
+    expect(getComputedStyle(footer).minHeight).toBe('66px')
     const markdown = footer.querySelector<HTMLButtonElement>('[data-dsh-share-selection-download]')
     const create = footer.querySelector<HTMLButtonElement>('[data-dsh-share-selection-create]')
     expect(markdown?.ariaLabel).toBe('下载')
