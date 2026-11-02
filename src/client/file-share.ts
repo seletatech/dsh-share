@@ -30,7 +30,7 @@ const TYPES: Record<string, string> = {
 const extension = (name = ''): string => name.split('.').at(-1)!.toLowerCase()
 /** Browsers can place only PNG (from these images) and plain text on the clipboard. */
 export const copiesAsImage = (name?: string): boolean => ['png', 'jpg', 'jpeg', 'webp'].includes(extension(name))
-export const copiesAsText = (name?: string): boolean => ['txt', 'md', 'csv', 'json'].includes(extension(name))
+export const copiesAsText = (name?: string): boolean => ['txt', 'md', 'csv', 'json', 'html', 'htm'].includes(extension(name))
 
 const STRINGS = {
   zh: {
@@ -119,12 +119,20 @@ export function chatText(text: string): string {
 }
 
 export async function copyableFileText(file: File, strings: FileShareStrings): Promise<string> {
-  if (file.size > 2 * 1024 * 1024 || !/^(?:text\/(?:plain|markdown|csv)|application\/json)$/.test(file.type)) return ''
+  if (file.size > 2 * 1024 * 1024 || !/^(?:text\/(?:plain|markdown|csv|html)|application\/json)$/.test(file.type)) return ''
   let text: string
   try {
     text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer())
   } catch {
     throw new Error(strings.encoding)
+  }
+  if (file.type === 'text/html') {
+    // Template content stays inert: scripts and external resources never enter the live document.
+    const template = document.createElement('template')
+    template.innerHTML = text
+    template.content.querySelectorAll('script,style,noscript,template,iframe,object,embed,title').forEach(node => node.remove())
+    template.content.querySelectorAll('br,p,div,h1,h2,h3,h4,h5,h6,li,tr,section,article').forEach(node => node.append('\n'))
+    return (template.content.textContent ?? '').replace(/[\t ]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
   }
   return file.type === 'text/markdown' ? chatText(text) : text
 }
@@ -168,7 +176,7 @@ function glyph(document: Document, kind: string): SVGSVGElement {
 }
 
 const STYLE = `
-[data-dsh-file-share-menu] { background: var(--dsw-alias-bg-base, #fff); border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22)); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,17,21,.12); box-sizing: border-box; color: var(--dsw-alias-label-primary, #0f1115); display: grid; font-size: 14px; inset: auto; margin: 0; min-width: 160px; padding: 4px; position: fixed; z-index: 9999; }
+[data-dsh-file-share-menu] { background: var(--dsw-alias-bg-base, #fff); border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22)); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,17,21,.12); box-sizing: border-box; color: var(--dsw-alias-label-primary, #0f1115); display: grid; font-size: 14px; inset: auto; margin: 0; min-width: 160px; max-width: min(300px, calc(100vw - 16px)); padding: 4px; position: fixed; z-index: 9999; }
 [data-dsh-file-share-menu] button, [data-dsh-file-share] button { appearance: none; background: transparent; border: 0; color: inherit; cursor: pointer; font: inherit; }
 [data-dsh-file-share-menu] button:disabled, [data-dsh-file-share] button:disabled { cursor: default; opacity: .5; }
 [data-dsh-file-share-menu] button:focus-visible, [data-dsh-file-share] button:focus-visible { outline: 2px solid var(--dsw-focus-ring-color, #4d6bfe); outline-offset: 2px; }

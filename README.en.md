@@ -91,3 +91,7 @@ Licensed under the [MIT License](LICENSE). Licenses for dependencies bundled int
 ## Links
 
 Available on the [dshfind.com](https://dshfind.com) DSH plugin marketplace.
+
+### Sending individual files
+
+On desktop, copy images, text or HTML body text, and copy internal links when available. Every file retains its send control; PDF and Office originals offer Download. Mobile browsers offer system sharing when supported, with download as a fallback. WeChat browsers provide link or browser-opening guidance. Host plugins provide file controls and enforce file access.
